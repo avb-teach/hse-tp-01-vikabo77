@@ -1,20 +1,17 @@
 #!/bin/bash
 
-input_dir="$1"
-output_dir="$2"
-
-for file in "$input_dir"/*; do
-    filename=$(basename "$file")
-    if [ -e "$output_dir/$filename" ]; then
-        counter=1
-        name="${filename%.*}" 
-        ext="${filename##*.}"
-        while [ -e "$output_dir/${name}_${counter}.${ext}" ]; do
-            counter=$((counter + 1))
-        done
-        new_filename="${name}_${counter}.${ext}"
-    else
-        new_filename="$filename"
-    fi
-    cp "$file" "$output_dir/$new_filename"
+new_name() {
+    local i=1
+    local name="${1%.*}"
+    local ext="${1##*.}"
+    local new="$1"
+    while [ -e "$2/$new" ]; do
+        new="${name}_$((i++)).${ext}"
+    done
+    echo "$new"
+}
+input="$1"
+output="$2"
+find "$input" -type f -print0 | while IFS= read -r -d '' f; do
+    cp "$f" "$output/$(new_name "${f##*/}" "$output)"
 done
