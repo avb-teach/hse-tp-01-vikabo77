@@ -1,29 +1,20 @@
 #!/bin/bash
 
-#!/bin/bash
-
 input_dir="$1"
 output_dir="$2"
 
-# Функция для генерации уникального имени файла
-generate_unique_name() {
-    local original_name="$1"
-    local counter=1
-    local name="${original_name%.*}"
-    local ext="${original_name##*.}"
-    local new_name="$original_name"
-
-    while [ -e "$output_dir/$new_name" ]; do
-        new_name="${name}_${counter}.${ext}"
-        ((counter++))
-    done
-
-    echo "$new_name"
-}
-
-# Рекурсивный обход и копирование файлов
-find "$input_dir" -type f -print0 | while IFS= read -r -d '' file; do
+for file in "$input_dir"/*; do
     filename=$(basename "$file")
-    unique_name=$(generate_unique_name "$filename")
-    cp "$file" "$output_dir/$unique_name"
+    if [ -e "$output_dir/$filename" ]; then
+        counter=1
+        name="${filename%.*}" 
+        ext="${filename##*.}"
+        while [ -e "$output_dir/${name}_${counter}.${ext}" ]; do
+            counter=$((counter + 1))
+        done
+        new_filename="${name}_${counter}.${ext}"
+    else
+        new_filename="$filename"
+    fi
+    cp "$file" "$output_dir/$new_filename"
 done
